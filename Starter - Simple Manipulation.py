@@ -5,7 +5,7 @@ file_name =  'c:/Users/HP/Desktop/Review-Tagging-Process/Sample.xlsx'
 
 workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/Sample.xlsx')
 sheet= workbook.active
-sheet["A1"] = 'weiner'
+sheet["A1"] = 'changer'
 c=sheet['A2']
 print(c)
 workbook.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/Sample.xlsx')
