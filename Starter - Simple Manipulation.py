@@ -24,10 +24,12 @@ x=1 # excel does not start iterating from 0, it starts iterating from 1 for rows
 
 cell = sheet[str(review_column)+str(x)]
 
-while cell.value != None :
+while x>=1 :
     review_location = str(review_column)+ str(x)
     tag_location = str(tag_column) + str(x)
     cell = sheet[review_location]
+    if cell.value == None:
+        break
     sheet[tag_location] = cell.value # this line would be where functions come in and the will update with generated tag, not the cell.value 
     print(cell.value)
     x+=1
