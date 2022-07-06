@@ -24,7 +24,7 @@ x=1 # excel does not start iterating from 0, it starts iterating from 1 for rows
 
 cell = sheet[str(review_column)+str(x)]
 
-while cell != None :
+while x>=1 :
     review_location = str(review_column)+ str(x)
     tag_location = str(tag_column) + str(x)
     cell = sheet[review_location]
