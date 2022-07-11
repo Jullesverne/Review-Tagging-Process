@@ -1,6 +1,6 @@
 # https://openpyxl.readthedocs.io/en/stable/tutorial.html library being used
-
 #importing things to open, clean and tag, THESE COULD DEPRECEATE
+
 from tracemalloc import stop
 import pandas as pd 
 import numpy as np
@@ -14,9 +14,11 @@ from nltk.corpus import stopwords
 # for Stemming propose - just get roots of words no -ly -ing
 from nltk.stem.porter import PorterStemmer
 
-from openpyxl import load_workbook as lw # this is for excel processing
+# this is for excel processing
+from openpyxl import load_workbook as lw 
 
-workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/Sample.xlsx') # you need to put in your local path here
+# you need to put in your local path here
+workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/Sample.xlsx') 
 sheet = workbook.active
 
 #function to clean review - needed my route or geek4geek route - NOT for github guys route
@@ -32,34 +34,27 @@ def review_cleaner(rev):
     review =' '.join(review)
     return review
 
-review_column = 'B' # you need to drop in the column that has reviews here
-tag_column = 'C' # you need to drop in the column where you want to put tag here
+# you need to drop in header for review and tag column here
+review_column = 'B' 
+tag_column = 'C' 
 
-x=1 # excel does not start iterating from 0, it starts iterating from 1 for rows, A for columns 
-
+x=1 
 cell = sheet[str(review_column)+str(x)]
 
-# up here need to go through pre tagged reviews and create scores (dictionary of dictionary) so 
-# when we get to while loop all we'd be doing is calculating score for each possible tag 
-# will need to open file of pre tagged reviews to generate dictionaries 
-
-#rn this loop is taking dirty review and cleaning it
+corpus= []
+#rn this loop is taking dirty review and cleaning it, and append to corpus 
 while x>=1 :
     review_location = str(review_column)+ str(x)
-    tag_location = str(tag_column) + str(x)
-    cell = sheet[review_location] # now cell variable contains content of Review 
+    cell = sheet[review_location]
     if cell.value == None:
         break # this it for when we get to end of list
+    corpus.append(review_cleaner(cell.value)) 
 
-    # need a function here to generate the tag for the review --> this will be the iterating through dictionaries 
-
-    sheet[tag_location] = review_cleaner(cell.value) # instead of cell.value this will be the tag that review gets
-    #print(cell.value)
     x+=1
+for word in corpus:
+    print(word)
 
-
-workbook.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/updated.xlsx') # you put in the file path and name of where you want 
-# the updated document saved
+#workbook.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/updated.xlsx') # you put in the file path and name of where you want 
 
 
 
