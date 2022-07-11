@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import re 
 import nltk 
+from sklearn.feature_extraction.text import CountVectorizer
 nltk.download('stopwords') 
 
 # to remove stopwords (super common ones)
@@ -51,8 +52,18 @@ while x>=1 :
     corpus.append(review_cleaner(cell.value)) 
 
     x+=1
-for word in corpus:
-    print(word)
+
+# now creating a bag of words
+
+cv = CountVectorizer()
+# X contains corpus, dependent variable
+X=cv.fit_transform(corpus).toarray()
+# Y contains answers, if review pos or neg
+Y= sheet['C'] # now Y has column of if pos or neg, need to 
+# use for thing in y thing.value to access value if we are iterating through
+
+
+
 
 #workbook.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/updated.xlsx') # you put in the file path and name of where you want 
 
