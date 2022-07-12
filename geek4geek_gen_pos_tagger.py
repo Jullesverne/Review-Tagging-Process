@@ -1,6 +1,8 @@
 # https://openpyxl.readthedocs.io/en/stable/tutorial.html library being used
-#importing things to open, clean and tag, THESE COULD DEPRECEATE
 
+# THIS TOOL CAN BE USED TO TAG ONE SPECIFIC TYPE, I.E A-B TAGGING NOT THIRD OPTIONS
+# totally flexible on what you choose to tag, just need to prep it in training set 
+# WHICH I WILL WRITE DOCUMENTATION FOR 
 from tracemalloc import stop
 import pandas as pd 
 import numpy as np
@@ -19,11 +21,12 @@ from nltk.stem.porter import PorterStemmer
 from openpyxl import load_workbook as lw 
 
 # you need to put in your local path here
-workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/Sample.xlsx') 
+workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/Gdoc_rev_prep.xlsx') 
 sheet = workbook.active
 
 #function to clean review - needed my route or geek4geek route - NOT for github guys route
 def review_cleaner(rev):
+    
     review = re.sub('[^a-zA-Z]', ' ',rev)
     review=review.lower()
     review=review.split()
@@ -36,21 +39,22 @@ def review_cleaner(rev):
     return review
 
 # you need to drop in header for review and tag column here
-review_column = 'B' 
+review_column = 'D' 
 tag_column = 'C' 
 
 x=1 
 cell = sheet[str(review_column)+str(x)]
 
 corpus= []
-#rn this loop is taking dirty review and cleaning it, and append to corpus 
-while x>=1 :
+#rn this loop is taking dirty review and cleaning it, and append to corpus
+# to create the training set, set the max value for x (while x<=...) 
+while x>=1:
     review_location = str(review_column)+ str(x)
     cell = sheet[review_location]
     if cell.value == None:
         break # this it for when we get to end of list
-    corpus.append(review_cleaner(cell.value)) 
-
+    elif isinstance(cell.value, str):
+        corpus.append(review_cleaner(cell.value))
     x+=1
 
 # now creating a bag of words
@@ -58,9 +62,14 @@ while x>=1 :
 cv = CountVectorizer()
 # X contains corpus, dependent variable
 X=cv.fit_transform(corpus).toarray()
-# Y contains answers, if review pos or neg
-Y= sheet['C'] # now Y has column of if pos or neg, need to 
-# use for thing in y thing.value to access value if we are iterating through
+
+
+# Y contains answers, if review pos or neg, need .value to actually access 1 or 0 
+Y = sheet['E'] 
+
+# now splitting into the training and test set
+
+
 
 
 
