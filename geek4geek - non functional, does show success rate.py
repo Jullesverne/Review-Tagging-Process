@@ -1,7 +1,6 @@
 # https://openpyxl.readthedocs.io/en/stable/tutorial.html library being used
-# Can only be used to tag one type of tag, in your training data set that tag to 1 and all others to 0
 # this file has the accuracy rates for your test based off your data and tweeks to it can give you a better sense of 
-# the accuracy, does not put reviews into excel sheet, just shows accuracy
+# the accuracy, does not put reviews into excel sheet, just shows accuracy!!
 
 # importing everything thats needed 
 from ctypes import sizeof
@@ -23,6 +22,7 @@ nltk.download('stopwords')
 # the model on into the filename section 
 # make the tag you want 1 and all others 0 for what you are training it on, and the model will tag 
 # the new reviews with a 1 if it falls into the category you want or a 0 if not
+
 workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/Gdoc_rev_prep.xlsx') 
 sheet = workbook.active
 
@@ -35,6 +35,48 @@ def review_cleaner(rev):
     review = [ps.stem(word) for word in review if not word in set(stopwords.words('english'))] 
     review =' '.join(review)
     return review
+
+# this takes your prediction and compares it to the tagged data, does AB testing
+# will make a new one when not just doing AB testing
+def accuracy_percent_ab_tag(y_pred, y_test):
+    false_pos=0
+    false_neg=0
+    true_pos=0
+    true_neg=0
+    i=0
+    while i<len(y_pred):
+        if y_pred[i] == 1 and y_test[i]==1:
+            true_pos+=1
+        elif y_pred[i] == 0 and y_test[i]==0:
+            true_neg+=1
+        elif y_pred[i]== 1 and y_test[i] == 0:
+            false_pos+=1
+        elif y_pred[i] == 0 and y_pred[i] == 1:
+            false_neg+=1
+    i+=1
+    total = false_neg+false_pos+true_neg+true_pos
+    print('percent correct pos '+ str(true_pos/total*100))
+    print('percent correct neg '+ str(true_neg/total*100))
+    print('percent false pos '+ str(false_pos/total*100))
+    print('percent false neg '+ str(false_neg/total*100))
+    print('total reviews tagged '+ str(total))
+
+
+# you need to pass this the array of the two columns you want to compare from the sheet
+# may also need to change this if the values are different, i.e one and zero vs strings
+def accuracy_percent_off_columns(y_pred, y_test):
+    correct = 0 
+    wrong = 0 
+    i=0
+    while i<len(y_pred):
+        if y_pred[i] == y_test[i]:
+            correct+=1
+        else:
+            wrong +=1
+    i+=1
+    total = correct+wrong
+    print('percent correct '+ str(correct/total*100))
+    print('percent wrong '+ str(wrong/total*100))
 
 # Review Column and Tag Column need the letter for their respective columns on data you are training from 
 review_column = 'D' 
@@ -84,31 +126,7 @@ model.fit(X_train, y_train)
 
 y_pred=model.predict(X_test)
 
-false_pos=0
-false_neg=0
-true_pos=0
-true_neg=0
-i=0
-while i<len(y_pred):
-    if y_pred[i] == 1 and y_test[i]==1:
-       true_pos+=1
-    elif y_pred[i] == 0 and y_test[i]==0:
-        true_neg+=1
-    elif y_pred[i]== 1 and y_test[i] == 0:
-       false_pos+=1
-    elif y_pred[i] == 0 and y_pred[i] == 1:
-        false_neg+=1
-    i+=1
 
-total = false_neg+false_pos+true_neg+true_pos
-
-
-
-print('percent correct pos '+ str(true_pos/total*100))
-print('percent correct neg '+ str(true_neg/total*100))
-print('percent false pos '+ str(false_pos/total*100))
-print('percent false neg '+ str(false_neg/total*100))
-print('total reviews tagged '+ str(total))
 
 
 
