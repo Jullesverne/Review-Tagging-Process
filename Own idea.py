@@ -13,10 +13,14 @@ import copy
 nltk.download('stopwords') # CONSIDER CHANGING WHAT THESE ARE, MAYBE MAKE MY OWN
 
 
-# Before any more changes, make sure this is linear, and figure out why I have extra tags in the tag_do doc, then rethink how I am tagging because lol is showing
+# Before any more changes, make sure this is linear, and figure out why I have extra tags in the tag_do doc, then look at why num_tags_dic is fucked up,
+# also re read through everything and make more functions to clean up legibility / how variables are named 
+
+# then rethink how I am tagging because lol is showing
 # up way too much for how under represented it should actually be 
 # score could be divided by number of instances of those tags? instead of word specificic? or maybe divide it by total tags - number of those? play
-# playing around with scoring could definitely help
+# playing around with scoring could definitely help, could change to divided by unique number of words for that type of tag, or change it to divided by number of that
+# type of review, maybe better than number of unique or otherwise words
 
 # definitely I think make my own version of stopwords, also consider removing the stemming thing, or updating it
 # to just take off ing, ly, ad verb endings bc horrible should be a strong indication of negative 
@@ -69,14 +73,25 @@ def make_score_all(master, tag_dic):
            tag_dic[tag][word]= tag_dic[tag][word]/master[word]
     return tag_dic
 
-def make_score_tag_specific(tag_dic):
+
+def make_score_num_tag(tags, num_tags):
+    for tag in tags.keys():
+        for word in tags[tag].keys():
+            tags[tag][word] = tags[tag][word]/num_tags[tag]
+    return tags
+
+
+
+def make_score_tag_specific(tag_dic): 
     for tag in tag_dic.keys():
         values=tag_dic[tag].values()
         total = sum(values)
         for word in tag_dic[tag].keys():
            tag_dic[tag][word]= tag_dic[tag][word]/total
     return tag_dic
-    
+
+
+
 def score_creator(review, score_dic):
     score = 0 
     rev_iter = review.split()
@@ -95,6 +110,7 @@ x=1
 cell = sheet[str(review_column)+str(x)]
 master_dic = {}
 tags_dic = {}
+num_tags_dic = {} 
 
 # this creates the master dic with total word count, and the 
 # tag dic with cound of word specific to that review
@@ -108,12 +124,14 @@ while cell.value!= None:
         for word in clean_rev.split():
             add_to_main(word, master_dic)
             add_to_tag_dic(word, tag.value.lower(), tags_dic)
+            add_to_main(tag.value.lower(), num_tags_dic)
     x+=1
 
+print(num_tags_dic.items())
 
-    
+tags_score_num = copy.deepcopy(tags_dic)
 
-
+tags_score_num = make_score_num_tag(tags_score_num, num_tags_dic)
 # now have both dictionaries, setting up the score for them WILL NEED TO ANNOTATE THIS BETTER LATER
 tags_score_specific = copy.deepcopy(tags_dic)
 
@@ -145,16 +163,22 @@ while review.value != None:
         correct_tag_value = reviews[correct_tag].value.lower()
     review_scores_all = {}
     review_scores_specific = {}
+    review_scores_num = {}
     if isinstance(review.value, str):
         cleaned= review_cleaner(review.value)
         if len(cleaned.split())>0:
             for tag in tags_score_all.keys():
                     rating_specific = score_creator(cleaned,tags_score_specific[tag])
                     review_scores_specific[tag] = rating_specific
+
                     rating_all = score_creator(cleaned,tags_score_all[tag])
                     review_scores_all[tag]=rating_all
+
+                    review_num_tags=score_creator(cleaned, tags_score_num[tag])
+                    review_scores_num[tag] = review_num_tags
             maxkey_specific = max(review_scores_specific, key=review_scores_specific.get)
             maxkey_all = max(review_scores_all, key=review_scores_all.get)
+            maxkey_num = max(review_scores_num, key=review_scores_num.get)
     reviews[tag_location] = maxkey_specific
 
 
@@ -168,9 +192,9 @@ while review.value != None:
             WS+=1
             #print('my specific prediction was '+ maxkey_specific + ' and correct prediction was ')
             #print(correct_tag_value)
-        elif maxkey_all == correct_tag_value.lower():
+        elif maxkey_num == correct_tag_value.lower():
             RA +=1
-        elif maxkey_all != correct_tag_value.lower():
+        elif maxkey_num != correct_tag_value.lower():
             WA+=1
     else:
         print('old tag was weird')
@@ -192,7 +216,7 @@ total = RA+RS+WA+WS
 print(total)
 print('correct specific ' + str(RS))
 
-print('correct all '+ str(RA))
+print('correct num '+ str(RA))
 
 
 fresh.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/to_tag.xlsx') 
