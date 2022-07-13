@@ -13,7 +13,9 @@ import copy
 nltk.download('stopwords') # CONSIDER CHANGING WHAT THESE ARE, MAYBE MAKE MY OWN
 
 
-# Before any more changes, make sure this is linear, and figure out why I have extra tags in the tag_do doc, then look at why num_tags_dic is fucked up,
+# Before any more changes, make sure this is linear, and figure out why I have extra tags in the tag_do doc, then look at why num_tags_dic is fucked up, because
+# that would also be throwing off my word count in masters, and potentially word count in tag dictionary too 
+# basically just go through and revalidate each step
 # also re read through everything and make more functions to clean up legibility / how variables are named 
 
 # then rethink how I am tagging because lol is showing
