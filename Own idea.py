@@ -13,7 +13,8 @@ import copy
 nltk.download('stopwords') # CONSIDER CHANGING WHAT THESE ARE, MAYBE MAKE MY OWN
 
 
-# Before any more changes, make sure this is linear, and figure out why I have extra tags in the tag_do doc, then look at why num_tags_dic is fucked up, because
+# Before any more changes, make sure this is linear, and figure out why I have extra tags in the tag_do doc, then look at why num_tags_dic is fucked up, 
+# it is recording way too many of some types of tags (product - positive) because
 # that would also be throwing off my word count in masters, and potentially word count in tag dictionary too 
 # basically just go through and revalidate each step
 # also re read through everything and make more functions to clean up legibility / how variables are named 
@@ -22,7 +23,9 @@ nltk.download('stopwords') # CONSIDER CHANGING WHAT THESE ARE, MAYBE MAKE MY OWN
 # up way too much for how under represented it should actually be 
 # score could be divided by number of instances of those tags? instead of word specificic? or maybe divide it by total tags - number of those? play
 # playing around with scoring could definitely help, could change to divided by unique number of words for that type of tag, or change it to divided by number of that
-# type of review, maybe better than number of unique or otherwise words
+# type of review, maybe better than number of unique or otherwise words or do it as number of 
+# times words show up for that specific tag divided by number of times that tag occurs
+
 
 # definitely I think make my own version of stopwords, also consider removing the stemming thing, or updating it
 # to just take off ing, ly, ad verb endings bc horrible should be a strong indication of negative 
@@ -102,7 +105,7 @@ def score_creator(review, score_dic):
             score+=score_dic[word]
             #score+=1
     score= float(score)
-    score = score % len(rev_iter) % 1.000000000000
+    score = score % len(rev_iter) / 1.000000000000
     return score
 
 review_column = 'G' 
@@ -126,7 +129,7 @@ while cell.value!= None:
         for word in clean_rev.split():
             add_to_main(word, master_dic)
             add_to_tag_dic(word, tag.value.lower(), tags_dic)
-            add_to_main(tag.value.lower(), num_tags_dic)
+            add_to_main(tag.value.lower(), num_tags_dic) # I think there is an error here
     x+=1
 
 print(num_tags_dic.items())
