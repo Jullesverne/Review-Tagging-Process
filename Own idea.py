@@ -91,12 +91,12 @@ def review_score_creator(review, score_dic):
     return score
 
 #loading in data to build the model 
-workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/baby.xlsx') 
+workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/better.xlsx') 
 sheet = workbook.active
 
 # need to update these with correct columns, this is taking in the already tagged examples and building the model 
-review_column = 'A' 
-tag_column = 'B' 
+review_column = 'G' 
+tag_column = 'J' 
 x=1 
 cell = sheet[str(review_column)+str(x)]
 master_dic = {}
@@ -134,22 +134,22 @@ while cell.value!= None:
 tags_score_num = copy.deepcopy(tags_dic)
 tags_score_num = make_score_num_tag(tags_score_num, num_tags_dic)
 
-print('score for num tags')
-print(tags_score_num['two'].items())
+#print('score for num tags')
+#print(tags_score_num['two'].items())
 
 tags_score_specific = copy.deepcopy(tags_dic)
 tags_score_specific = make_score_tag_specific(tags_score_specific)
 
-print('score for specific')
-print(tags_score_specific['two'].items())
+#print('score for specific')
+#print(tags_score_specific['two'].items())
 
 tags_score_all = copy.deepcopy(tags_dic)
 tags_score_all = make_score_all(master_dic, tags_score_all) 
-print('score for all')
-print(tags_score_all['two'].items())
+#print('score for all')
+#print(tags_score_all['two'].items())
 
 # now loading in new reviews that I am going to generate tags for 
-fresh = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/baby1.xlsx') 
+fresh = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/to_tag.xlsx') 
 reviews = fresh.active
 
 x=1
@@ -163,11 +163,14 @@ RS = 0
 RA = 0 
 WS = 0 
 WA = 0 
+
+when_write = {}
+when_wrong = {}
 while review.value != None:
     review_location = str(rev_col)+ str(x)
     review = reviews[review_location]
-    tag_location = str(tag_col)+str(x)
-    correct_tag = str(tag_true)+str(x)
+    tag_location = str(tag_col)+str(x) # where its gonna be put
+    correct_tag = str(tag_true)+str(x) # one I am checking against
     # this if statement is just for comparisons sake 
     if isinstance(reviews[correct_tag].value, str):
         correct_tag_value = reviews[correct_tag].value.lower()
@@ -178,46 +181,48 @@ while review.value != None:
 
     #now we are generating the score for each potential tag of a review 
     if isinstance(review.value, str):
-        print('printing review')
-        print(review.value)
+        #print('printing review')
+        #print(review.value)
         cleaned = review_cleaner(review.value)
         if len(cleaned.split())>0:
             for tag in tags_score_all.keys():
-                    print('printing tag')
-                    print(tag)
+                    #print('printing tag')
+                    #print(tag)
                     # verify that this section works correctly 
                     rating_specific = review_score_creator(cleaned,tags_score_specific[tag])
                     review_scores_specific[tag] = rating_specific
-                    print('score for above review from specific ')
-                    print(rating_specific)
+                    #print('score for above review from specific ')
+                    #print(rating_specific)
 
                     rating_all = review_score_creator(cleaned,tags_score_all[tag])
                     review_scores_all[tag]=rating_all
-                    print('score for above from all')
-                    print(rating_all)
+                    #print('score for above from all')
+                    #print(rating_all)
 
                     # I think next two lines could have an error
                     review_num_tags= review_score_creator(cleaned, tags_score_num[tag])
                     review_scores_num[tag] = review_num_tags
-                    print('score for above from num_tags')
-                    print(review_num_tags)
+                    #print('score for above from num_tags')
+                    #print(review_num_tags)
 
             # these three lines are finding the tag with the highest score for the review
-            maxkey_specific = max(review_scores_specific, key=review_scores_specific.get)
-            maxkey_all = max(review_scores_all, key=review_scores_all.get)
-            #maxkey_num = max(review_scores_num, key=review_scores_num.get)
+            #maxkey_specific = max(review_scores_specific, key=review_scores_specific.get)
+            #maxkey_all = max(review_scores_all, key=review_scores_all.get)
+            maxkey_num = max(review_scores_num, key=review_scores_num.get)
 
     # this is putting the tag into the location specified earlier
-    reviews[tag_location] = maxkey_specific
+    reviews[tag_location] = maxkey_num
     
-
+    
 
     # This whole segment is to test accuracy, will be rehauled before considered seriously 
     if isinstance(correct_tag_value, str):
-        if maxkey_specific == correct_tag_value.lower():
+        if maxkey_num == correct_tag_value.lower():
             RS+=1
-        elif maxkey_specific != correct_tag_value.lower():
+            add_to_main(maxkey_num, when_write)
+        elif maxkey_num != correct_tag_value.lower():
             WS+=1
+            add_to_main(correct_tag_value.lower(), when_wrong)
         #elif maxkey_num == correct_tag_value.lower():
             #RA +=1
         #elif maxkey_num != correct_tag_value.lower():
@@ -231,8 +236,18 @@ while review.value != None:
 
 
 # this is all just accuracy testing
+print('when correct')
+print(when_write.items())
+
+print('when wrong')
+print(when_wrong.items())
 
 total = RA+RS+WA+WS
 
+print('number write using new score')
+print(RS/total*100)
+
+print('total')
+print(total)
 # this is saving the now tagged reviews to a file you specify
-fresh.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/baby1.xlsx') 
+fresh.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/to_tag.xlsx') 
