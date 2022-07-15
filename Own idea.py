@@ -91,13 +91,44 @@ def review_score_creator(review, score_dic):
     score = score / len(rev_iter) / 1.000000000000
     return score
 
+def accuracy(tag, correct):
+    if tag.lower() == correct.lower():
+        return 1
+    else:
+        return -1
+
+# FOR SOME REASON THIS IS GETTING FUCKED UP, DIVIDED BY 10??
+def other_avg(tag, word, tag_dic, num_tags):
+
+        word_count = 0 
+        tag_count = 0 
+        for tags in tag_dic.keys():
+            if tags!= tag:
+                tag_count+=num_tags[tags]
+             
+                if word in tag_dic[tags].keys():
+                    word_count+=tag_dic[tags][word]
+                    
+        return word_count / tag_count
+
+
+def make_score_nums_minus_avg(tags, num_tags):
+    c1 = copy.deepcopy(tags)
+    c2 = copy.deepcopy(num_tags)
+    for tag in tags.keys():
+        for word in tags[tag].keys():
+            othes = other_avg(tag, word, c1, c2)
+           
+            tags[tag][word] = tags[tag][word]/num_tags[tag] - othes
+    return tags
+
 #loading in data to build the model 
-workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/baby.xlsx') 
+workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/better.xlsx') 
 sheet = workbook.active
 
 # need to update these with correct columns, this is taking in the already tagged examples and building the model 
-review_column = 'A' 
-tag_column = 'B' 
+review_column = 'G' 
+tag_column = 'J' 
 x=1 
 cell = sheet[str(review_column)+str(x)]
 master_dic = {}
@@ -114,6 +145,7 @@ while cell.value!= None:
     tag=sheet[pre_tagged_value]
     if isinstance(cell.value, str) and isinstance(tag.value, str):
         clean_rev = review_cleaner(cell.value)
+        tag.value = tag.value.strip()
         add_to_main(tag.value.lower(), num_tags_dic)
         for word in clean_rev.split():
             add_to_main(word, master_dic)
@@ -125,31 +157,23 @@ builder=aw.DocumentBuilder(doc)
 
 #this is copying the tags_dic so I can have different scoring dictionaries 
 # NEED TO VERIFY EACH OF THE SCORING DICTIONARIES AND FUNCITONS AS WELL
+
 tags_score_num = copy.deepcopy(tags_dic)
 tags_score_num = make_score_num_tag(tags_score_num, num_tags_dic)
 
-builder.write('      score for num tags - should be word count divided by number of that type of tag')
-for tag in tags_score_num.keys():
-    builder.write(tag)
-    builder.write(str(tags_score_num[tag].items()))
 
 tags_score_specific = copy.deepcopy(tags_dic)
 tags_score_specific = make_score_tag_specific(tags_score_specific)
 
-builder.write('    score for specific - should be word count divded by total words used for that type of tag ')
-for tag in tags_score_specific.keys():
-    builder.write(tag)
-    builder.write(str(tags_score_specific[tag].items()))
+
 
 tags_score_all = copy.deepcopy(tags_dic)
 tags_score_all = make_score_all(master_dic, tags_score_all) 
 
-builder.write('     score for all - should be word count divided by total number of times that word was used for all tags ')
-for tag in tags_score_all.keys():
-    builder.write(tag)
-    builder.write(str(tags_score_all[tag].items()))
 
-doc.save("c:/Users/HP/Desktop/Review-Tagging-Process/reader.docx")
+tags_num_minus_others = copy.deepcopy(tags_dic)
+tags_num_minus_others = make_score_nums_minus_avg(tags_num_minus_others, num_tags_dic)
+
 
 # now loading in new reviews that I am going to generate tags for 
 fresh = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/to_tag.xlsx') 
@@ -162,95 +186,109 @@ tag_col = 'C' # where you want tag placed
 tag_true = 'B' # because I am using a test set this is where the true tags are actually contained
 correct_tag = str(tag_true)+str(x)
 
+RA = 0
 RS = 0 
-RA = 0 
-WS = 0 
-WA = 0 
+RN = 0 
+RF = 0 
 
-when_write = {}
+when_right = {}
 when_wrong = {}
-while review.value != None:
+while review.value!= None:
     review_location = str(rev_col)+ str(x)
     review = reviews[review_location]
     tag_location = str(tag_col)+str(x) # where its gonna be put
     correct_tag = str(tag_true)+str(x) # one I am checking against
+    copier = str('D')+str(x)
+
+    if review.value == None:
+        break
     # this if statement is just for comparisons sake 
     if isinstance(reviews[correct_tag].value, str):
         correct_tag_value = reviews[correct_tag].value.lower()
-
+        correct_tag_value = correct_tag_value.strip()
     review_scores_all = {}
     review_scores_specific = {}
     review_scores_num = {}
-
+    review_scores_minus = {}
     #now we are generating the score for each potential tag of a review 
     if isinstance(review.value, str):
-        #print('printing review')
-        #print(review.value)
+        john = copy.deepcopy(review.value)
         cleaned = review_cleaner(review.value)
         if len(cleaned.split())>0:
             for tag in tags_score_all.keys():
-                    #print('printing tag')
-                    #print(tag)
+                    
                     # verify that this section works correctly 
+
                     rating_specific = review_score_creator(cleaned,tags_score_specific[tag])
                     review_scores_specific[tag] = rating_specific
-                    #print('score for above review from specific ')
-                    #print(rating_specific)
+                    
 
                     rating_all = review_score_creator(cleaned,tags_score_all[tag])
                     review_scores_all[tag]=rating_all
-                    #print('score for above from all')
-                    #print(rating_all)
+                    
 
                     # I think next two lines could have an error
                     review_num_tags= review_score_creator(cleaned, tags_score_num[tag])
                     review_scores_num[tag] = review_num_tags
-                    #print('score for above from num_tags')
-                    #print(review_num_tags)
 
+                    rating_minus_others = review_score_creator(cleaned, tags_num_minus_others[tag])
+                    review_scores_minus[tag] = rating_minus_others
             # these three lines are finding the tag with the highest score for the review
-            #maxkey_specific = max(review_scores_specific, key=review_scores_specific.get)
-            #maxkey_all = max(review_scores_all, key=review_scores_all.get)
+            maxkey_specific = max(review_scores_specific, key=review_scores_specific.get)
+            maxkey_specific = maxkey_specific.strip()
+            maxkey_all = max(review_scores_all, key=review_scores_all.get)
+            maxkey_all = maxkey_all.strip()
             maxkey_num = max(review_scores_num, key=review_scores_num.get)
+            maxkey_mins = max(review_scores_minus, key=review_scores_minus.get)
+            if john != None:
+                reviews[tag_location] = maxkey_num
+                reviews[copier] = john
+            maxkey_num = maxkey_num.strip()
 
     # this is putting the tag into the location specified earlier
-    reviews[tag_location] = maxkey_num
     
     
-
     # This whole segment is to test accuracy, will be rehauled before considered seriously 
     if isinstance(correct_tag_value, str):
-        if maxkey_num == correct_tag_value.lower():
-            RS+=1
-            add_to_main(maxkey_num, when_write)
-        elif maxkey_num != correct_tag_value.lower():
-            WS+=1
-            add_to_main(correct_tag_value.lower(), when_wrong)
-        #elif maxkey_num == correct_tag_value.lower():
-            #RA +=1
-        #elif maxkey_num != correct_tag_value.lower():
-            #WA+=1
+        larry = copy.deepcopy(correct_tag_value)
+        joe = copy.deepcopy(correct_tag_value)
+        bob = copy.deepcopy(correct_tag_value)
+        RS += accuracy(maxkey_specific, larry)
+        RA += accuracy(maxkey_all, correct_tag_value)
+        RN += accuracy(maxkey_num, joe)
+        RF += accuracy(maxkey_mins, bob)
+    
     else:
         print('old tag was weird')
         print(correct_tag_value)
     # increase x to iterate to the next tag
     x+=1
 
+builder.write('number correct for all scoring dic')
+builder.write('     ')
+builder.write(str(RA))
 
+builder.write('  number correct for specific scoring dic')
+builder.write('     ')
+builder.write(str(RS))
 
+builder.write('  number correct for num scoring dic')
+builder.write('     ')
+builder.write(str(RN))
+
+builder.write('   number correct for fancy way')
+builder.write(str(RF))
 # this is all just accuracy testing
-print('when correct')
-print(when_write.items())
 
-print('when wrong')
-print(when_wrong.items())
-
-total = RA+RS+WA+WS
+total = x-1
+builder.write(  'total reviews were    ')
+builder.write(str(total))
 
 print('number write using new score')
-print(RS/total*100)
+print(RN/total)
 
 print('total')
 print(total)
 # this is saving the now tagged reviews to a file you specify
 fresh.save(filename='c:/Users/HP/Desktop/Review-Tagging-Process/to_tag.xlsx') 
+doc.save("c:/Users/HP/Desktop/Review-Tagging-Process/reader.docx")
