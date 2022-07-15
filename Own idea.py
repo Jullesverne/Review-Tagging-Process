@@ -10,6 +10,7 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from openpyxl import load_workbook as lw 
 import copy
+import aspose.words as aw
 nltk.download('stopwords') # CONSIDER CHANGING WHAT THESE ARE, MAYBE MAKE MY OWN
 
 
@@ -66,7 +67,7 @@ def make_score_num_tag(tags, num_tags):
     return tags
 
 
-#same as make_score_all, but instead of dividing by the total word count for a specific word
+# same as make_score_all, but instead of dividing by the total word count for a specific word
 # divides by the total number of words used for that type of tag
 def make_score_tag_specific(tag_dic): 
     for tag in tag_dic.keys():
@@ -91,12 +92,12 @@ def review_score_creator(review, score_dic):
     return score
 
 #loading in data to build the model 
-workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/better.xlsx') 
+workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/baby.xlsx') 
 sheet = workbook.active
 
 # need to update these with correct columns, this is taking in the already tagged examples and building the model 
-review_column = 'G' 
-tag_column = 'J' 
+review_column = 'A' 
+tag_column = 'B' 
 x=1 
 cell = sheet[str(review_column)+str(x)]
 master_dic = {}
@@ -119,34 +120,36 @@ while cell.value!= None:
             add_to_tag_dic(word, tag.value.lower(), tags_dic)
     x+=1
 
-#print('master list of word - useful for score checking')
-#print(master_dic.items())
-
-#print('checking tags_dic is correct for one tag - useful for score checking')
-#print(tags_dic['two'].items())
-
-#print('checking counter for number of tags is correct - useful for score checking ')
-#print(num_tags_dic.items())
-
+doc = aw.Document()
+builder=aw.DocumentBuilder(doc)
 
 #this is copying the tags_dic so I can have different scoring dictionaries 
 # NEED TO VERIFY EACH OF THE SCORING DICTIONARIES AND FUNCITONS AS WELL
 tags_score_num = copy.deepcopy(tags_dic)
 tags_score_num = make_score_num_tag(tags_score_num, num_tags_dic)
 
-#print('score for num tags')
-#print(tags_score_num['two'].items())
+builder.write('      score for num tags - should be word count divided by number of that type of tag')
+for tag in tags_score_num.keys():
+    builder.write(tag)
+    builder.write(str(tags_score_num[tag].items()))
 
 tags_score_specific = copy.deepcopy(tags_dic)
 tags_score_specific = make_score_tag_specific(tags_score_specific)
 
-#print('score for specific')
-#print(tags_score_specific['two'].items())
+builder.write('    score for specific - should be word count divded by total words used for that type of tag ')
+for tag in tags_score_specific.keys():
+    builder.write(tag)
+    builder.write(str(tags_score_specific[tag].items()))
 
 tags_score_all = copy.deepcopy(tags_dic)
 tags_score_all = make_score_all(master_dic, tags_score_all) 
-#print('score for all')
-#print(tags_score_all['two'].items())
+
+builder.write('     score for all - should be word count divided by total number of times that word was used for all tags ')
+for tag in tags_score_all.keys():
+    builder.write(tag)
+    builder.write(str(tags_score_all[tag].items()))
+
+doc.save("c:/Users/HP/Desktop/Review-Tagging-Process/reader.docx")
 
 # now loading in new reviews that I am going to generate tags for 
 fresh = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/to_tag.xlsx') 
