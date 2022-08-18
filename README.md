@@ -4,3 +4,4 @@
 
 # Seperately, after the Random Forest method was working, I decided to see how accurate brute force methods would be at tagging reviews, i.e ones that used no ML.
 # It turned out they were very bad. 
+# All sensitive information (i.e customers reviews) has been cleaned from this Repo when I made it public.
