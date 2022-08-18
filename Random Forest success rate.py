@@ -1,4 +1,3 @@
-# https://openpyxl.readthedocs.io/en/stable/tutorial.html library being used
 # this file has the accuracy rates for your test based off your data and tweeks to it can give you a better sense of 
 # the accuracy, does not put reviews into excel sheet, just shows accuracy!!
 
