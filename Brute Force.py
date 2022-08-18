@@ -11,7 +11,7 @@ from nltk.stem.porter import PorterStemmer
 from openpyxl import load_workbook as lw 
 import copy
 import aspose.words as aw
-nltk.download('stopwords') # CONSIDER CHANGING WHAT THESE ARE, MAYBE MAKE MY OWN
+nltk.download('stopwords')
 
 
 #NOTE all the tag_num_dic stuff is currently commented out, will need to comment it back in when done
@@ -58,7 +58,7 @@ def make_score_all(master, tag_dic):
            tag_dic[tag][word]= tag_dic[tag][word]/master[word]
     return tag_dic
 
-# similar to above, but supposde to make the value the number of times that word was seen for that tag divided by 
+# similar to above, but supposed to make the value the number of times that word was seen for that tag divided by 
 # the number of reviews with that tag
 def make_score_num_tag(tags, num_tags):
     for tag in tags.keys():
@@ -97,7 +97,6 @@ def accuracy(tag, correct):
     else:
         return -1
 
-# FOR SOME REASON THIS IS GETTING FUCKED UP, DIVIDED BY 10??
 def other_avg(tag, word, tag_dic, num_tags):
 
         word_count = 0 
@@ -122,11 +121,11 @@ def make_score_nums_minus_avg(tags, num_tags):
             tags[tag][word] = tags[tag][word]/num_tags[tag] - othes
     return tags
 
-#loading in data to build the model 
+#loading in data to build the model THIS is specific to you
 workbook = lw(filename='c:/Users/HP/Desktop/Review-Tagging-Process/better.xlsx') 
 sheet = workbook.active
 
-# need to update these with correct columns, this is taking in the already tagged examples and building the model 
+# need to update these with your column headers, this is taking in the already tagged examples and building the model 
 review_column = 'G' 
 tag_column = 'J' 
 x=1 
@@ -137,7 +136,6 @@ num_tags_dic = {}
 
 # this creates the master dic with total word count, and the 
 # tag dic with cound of word specific to that review
-# BOth of which need to be verified, and also need to add in the num_tags_dic to actually work
 while cell.value!= None:
     review_location = str(review_column)+ str(x)
     pre_tagged_value = str(tag_column)+str(x)
@@ -156,7 +154,6 @@ doc = aw.Document()
 builder=aw.DocumentBuilder(doc)
 
 #this is copying the tags_dic so I can have different scoring dictionaries 
-# NEED TO VERIFY EACH OF THE SCORING DICTIONARIES AND FUNCITONS AS WELL
 
 tags_score_num = copy.deepcopy(tags_dic)
 tags_score_num = make_score_num_tag(tags_score_num, num_tags_dic)
@@ -217,7 +214,6 @@ while review.value!= None:
         if len(cleaned.split())>0:
             for tag in tags_score_all.keys():
                     
-                    # verify that this section works correctly 
 
                     rating_specific = review_score_creator(cleaned,tags_score_specific[tag])
                     review_scores_specific[tag] = rating_specific
@@ -227,12 +223,12 @@ while review.value!= None:
                     review_scores_all[tag]=rating_all
                     
 
-                    # I think next two lines could have an error
                     review_num_tags= review_score_creator(cleaned, tags_score_num[tag])
                     review_scores_num[tag] = review_num_tags
 
                     rating_minus_others = review_score_creator(cleaned, tags_num_minus_others[tag])
                     review_scores_minus[tag] = rating_minus_others
+                    
             # these three lines are finding the tag with the highest score for the review
             maxkey_specific = max(review_scores_specific, key=review_scores_specific.get)
             maxkey_specific = maxkey_specific.strip()
@@ -248,7 +244,7 @@ while review.value!= None:
     # this is putting the tag into the location specified earlier
     
     
-    # This whole segment is to test accuracy, will be rehauled before considered seriously 
+    # This whole segment is to test accuracy
     if isinstance(correct_tag_value, str):
         larry = copy.deepcopy(correct_tag_value)
         joe = copy.deepcopy(correct_tag_value)
