@@ -1,5 +1,4 @@
-# https://openpyxl.readthedocs.io/en/stable/tutorial.html library being used
-# low success rate, can be used to tag one specific tag (A-B) but will not generate tags for more than 1 thing
+# can be used to tag one specific tag (A-B) but will not generate tags for more than 1 thing
 # to change what it is tagging, you need to update the data model is trained on, currently trained to 
 # tag general - positive
 
