@@ -7,5 +7,5 @@
 
 # Seperately, after the Random Forest method was working, I decided to see how accurate brute force methods would be at tagging reviews in more than a binary, i.e ones that used no ML to tag at least 3 kinds of reviews.
 
-# It turned out they were very bad, with a success rate in the mid to low teens. This experience helped grow my interest in ML and lead to me enrolling in a graduate course focused on deep neural nets. 
+# It turned out they were very bad, with a success rate in the mid to low teens (averaged 12%) . This experience helped grow my interest in ML and lead to me enrolling in a graduate course focused on deep neural nets. 
 # All sensitive information (i.e customers reviews) has been cleaned from this Repo when I made it public.
